@@ -1,0 +1,37 @@
+{
+  "name": "bioteca",
+  "version": "0.0.0",
+  "private": "true",
+  "description": "bioteca management aplication",
+  "main": "server.js",
+  "author": "Bioinfo Team",
+  "dependencies": {
+    "angular": "^1.6.4",
+    "body-parser": "~1.5.2",
+    "connect": "^3.6.2",
+    "connect-multiparty": "^1.2.5",
+    "cookie-parser": "^1.4.3",
+    "csvtojson": "^1.1.4",
+    "express": "~4.7.2",
+    "express-session": "^1.15.3",
+    "formidable": "^1.1.1",
+    "json2csv": "^3.7.3",
+    "method-override": "~2.1.2",
+    "mongoose": "~3.6.2",
+    "morgan": "~1.2.2"
+  },
+  "devDependencies": {
+    "angular": "^1.6.4",
+    "angular-mocks": "^1.6.4",
+    "browserify": "^14.4.0",
+    "chai": "^4.0.2",
+    "jasmine-core": "^2.6.4",
+    "karma": "^1.0.0",
+    "karma-browserify": "^5.1.1",
+    "karma-firefox-launcher": "^1.0.1",
+    "karma-jasmine": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "mocha": "^3.4.2",
+    "watchify": "^3.9.0"
+  }
+}

@@ -1,0 +1,235 @@
+<!doctype html>
+
+<html ng-app="bioteca">
+	<head>
+		<meta charset="utf-8">
+		<!-- Otimizar a exibição em dispositivos móveis -->
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<title>Bioteca</title>
+		
+		<!-- Carregando o bootstrap-->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		
+		<!-- CSS -->
+		<link href="../view/css/style.css" rel="stylesheet">
+		
+		<!-- JS -->
+		<!-- Carregando a biblioteca jQuery -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+		
+		<!-- Carregando a biblioteca AngularJS -->
+		<script	src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+		<!-- Carregando a biblioteca bootstrap -->
+		<script	src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		
+		<script src="../control/UsuarioControl.js"></script>
+		
+		
+	</head>
+	<body ng-controller="usuarioController" ng-required="mostraMensagens()" ng-init="buscaStatus()">
+		<nav class="navbar navbar-inverse">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="#">Bioteca</a>
+				</div>
+				<ul class="nav navbar-nav">
+					<li><a href="index.html" ng-show="grupo > 0">Home</a></li>
+					<li><a href="../view/ViewCadastroPaciente.html" ng-show="grupo >= 2">Novo
+							Registro</a></li>
+					<li><a href="../view/ViewUploadArquivos.html" ng-show="grupo >= 2">Upload</a></li>
+				</ul>
+	
+				<ul class="nav navbar-nav navbar-right">
+					<li><a id="login" href="../view/ViewCadastroUsuario.html"><span
+							class="glyphicon glyphicon-user"></span>Cadastre-se</a></li>
+	
+					<li><a id="login" href="../view/ViewLogin.html"><span
+							class="glyphicon glyphicon-log-in"></span> Login</a></li>
+	
+					<!-- DROPDOWN DO USUARIO -->
+					<li>
+					<li id="usuario" class="dropdown"><a class="dropdown-toggle"
+						data-toggle="dropdown" href="#">{{usuarioNome}} <span
+							class="caret"></span></a>
+						<ul class="dropdown-menu">
+							<li><a class="active" href="../view/ViewGerenciamentoUsuario">
+									<span class="glyphicon glyphicon-cog"></span> Minha Conta
+							</a></li>
+							<li><a href="#" ng-click="logout()"> <span
+									class="glyphicon glyphicon-log-out"></span> Sair
+							</a></li>
+						</ul></li>
+					</li>
+				</ul>
+			</div>
+		</nav>
+		
+		
+			
+			
+		<div class="container">
+		
+			<!-- ALERT SUCCESS -->
+		   	<div class="alert alert-success alert-dismissable" id="successInf">
+		   	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			  <strong>Solicitação Enviada!</strong> Sua solicitação será avaliada. 
+			</div>
+			
+			<div class="alert alert-success alert-dismissable" id="aprovedInf">
+		   	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			  <strong>Parabéns!</strong> Sua solicitação foi aprovada!. 
+			</div>
+			
+			<div class="alert alert-warning alert-dismissable" id="alertInf">
+		   	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			  Você não possui acesso de escrita e alteração de dados, caso tenha enviado solicitação, aguarde! 
+			</div>
+			
+			<div class="alert alert-info alert-dismissable" id="statusInf" ng-click="excluirSolicitacao()">
+		   	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			  Status da sua solicitação: <strong>{{statusSolicit}}</strong> 
+			</div>
+			
+			<div class="row">
+				<div class="col-sm-6" ng-show="grupo < 2">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<h4>
+								Solicitar acesso de envio e alteração de dados
+								<button type="button" class="btn btn-info" data-toggle="collapse"
+									data-target="#solicita">
+									<span class="glyphicon glyphicon-edit" />
+								</button>
+							</h4>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6" ng-show="grupo > 2">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<h3>
+								Gerenciar Solicitações
+								<button type="button" class="btn btn-primary" onclick="window.location.href='../view/ViewAdministrador.html'">
+									 <span class="glyphicon glyphicon-cog"/>
+								</button>
+							</h3>
+						</div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<h3>
+								Excluir Conta
+								<button type="button" class="btn btn-danger" data-toggle="modal"
+									data-target="#modalExcluir">
+									<span class="glyphicon glyphicon-trash" />
+								</button>
+							</h3>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="col-xs-offset-2 col-xs-8 col-md-offset-4 col-md-4">
+					<form>
+	
+						<div id="solicita" class="form-group collapse">
+	
+							<label for="just">Justificativa</label>
+							<textarea class="form-control" rows="5" id="just" value=""
+								placeholder="Justifique a sua solicitação" ng-model="user.justif"></textarea>
+							
+							<br>
+							<button type="button" class="btn btn-info"
+								ng-click="enviarSolicitacao()">Enviar</button>
+						</div>
+						
+					</form>
+				</div>
+	
+				<!-- Modal Excluir -->
+				<div id="modalExcluir" class="modal fade" role="dialog">
+					<div class="modal-dialog">
+	
+						<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Apagar conta</h4>
+							</div>
+							<div class="modal-body">
+								<p>Confirme o seu login e senha</p>
+								<form>
+									<div class="form-group">
+	
+										<label for="email">Email</label> <input type="text" id="email"
+											name="email" class="form-control" ng-model="user.email"
+											placeholder="Digite seu e-mail" required autofocus>
+									</div>
+									<div class="form-group" show-errors>
+										<label for="password">Senha</label> <input type="password"
+											id="password" name="password" class="form-control"
+											ng-model="user.password" placeholder="Password" required>
+									</div>
+									<div class="text-center form-group">
+										<button type="submit" class="btn btn-primary"
+											ng-click="excluir()">Excluir</button>
+									</div>
+									<br />
+								</form>
+	
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default"
+									data-dismiss="modal">Cancelar</button>
+							</div>
+						</div>
+	
+					</div>
+				</div>
+	
+				<!-- Modal Gerenciar -->
+				<div id="modalExcluir" class="modal fade" role="dialog">
+					<div class="modal-dialog">
+	
+						<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title">Apagar conta</h4>
+							</div>
+							<div class="modal-body">
+								<p>Confirme o seu login e senha</p>
+								<form>
+									<div class="form-group">
+	
+										<label for="email">Email</label> <input type="text" id="email"
+											name="email" class="form-control" ng-model="user.email"
+											placeholder="Digite seu e-mail" required autofocus>
+									</div>
+									<div class="form-group" show-errors>
+										<label for="password">Senha</label> <input type="password"
+											id="password" name="password" class="form-control"
+											ng-model="user.password" placeholder="Password" required>
+									</div>
+									<div class="text-center form-group">
+										<button type="submit" class="btn btn-primary"
+											ng-click="excluir()">Excluir</button>
+									</div>
+									<br />
+								</form>
+	
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default"
+									data-dismiss="modal">Cancelar</button>
+							</div>
+						</div>
+	
+					</div>
+				</div>
+			</div>
+	</body>
+</html>

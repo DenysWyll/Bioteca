@@ -1,0 +1,850 @@
+<!-- index.html -->
+<!doctype html>
+ 
+<html ng-app="bioteca">
+	<head>
+	    <!-- META -->
+	    <meta charset="utf-8">
+	    <!-- Otimizar a exibição em dispositivos móveis -->
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	    <title>Bioteca</title>
+	 
+	    
+	    <!-- Carregando o bootstrap-->
+	    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	  	
+	  	<!-- CSS -->
+	    <link href="../view/css/style.css" rel="stylesheet">
+	    
+	 	<!--<link href="../view/css/style.css" rel="stylesheet">-->
+	    <!-- JS -->
+	    <!-- Carregando a biblioteca jQuery -->
+	    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	    <!-- Carregando a biblioteca AngularJS -->
+	    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+	
+	    <!-- Carregando a biblioteca bootstrap -->
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	    
+	    <script src="../control/PacienteControl.js"></script>
+	    
+	</head>
+	<body ng-controller="mainController" ng-required="verificaLogin()">
+		<nav class="navbar navbar-inverse">
+	  		<div class="container-fluid">
+		    	<div class="navbar-header">
+		      		<a class="navbar-brand" href="#">Bioteca</a>
+		    	</div>
+		    		<ul class="nav navbar-nav">
+		      			<li class="active"><a href="index.html">Home</a></li>
+		      			<li>
+		      			<a href="../view/ViewCadastroPaciente.html" ng-show="grupo >=2">Novo Registro</a>
+		      			</li>
+		      			<li><a href="../view/ViewUploadArquivos.html" ng-show="grupo >=2">Upload</a></li>
+		    		</ul>
+		    		<ul class="nav navbar-nav navbar-right">
+		      			<li><a id="login" href="../view/ViewCadastroUsuario.html"><span class="glyphicon glyphicon-user"></span> Cadastre-se</a></li>
+		      			<li><a id="login" href="../view/ViewLogin.html"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+		      			<!-- DROPDOWN DO USUARIO -->
+		    			<li>
+		    				<li class="dropdown">
+							    <a id="usuario" class="dropdown-toggle" data-toggle="dropdown" href="#">{{usuarioNome}}
+							    <span class="caret"></span></a>
+							    <ul class="dropdown-menu">
+							      <li>
+							      	 <a href="../view/ViewGerenciamentoUsuario.html">
+							      		<span class="glyphicon glyphicon-cog"></span>
+							      		Minha Conta
+							      	 </a>
+							      </li>
+							      <li>
+							      	<a href="#" ng-click="logout()">
+			    							<span class="glyphicon glyphicon-log-out"></span>
+			    							Sair
+		    						</a>
+		    					 </li>
+							    </ul>
+							  </li>
+		    			</li>
+		    		</ul>
+	  		</div>
+		</nav>
+		
+		<div class="container">
+		
+		<!-- ALERTS -->
+	   	<div class="alert alert-success alert-dismissable" id="successEditInf">
+	   	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+		  <strong>Dados Enviados!</strong> Seus dados já foram atualizados em nosso banco de dados! 
+		</div>
+	  	<div class="alert alert-danger alert-dismissable" id="dangerInf">
+	  	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+		  <strong>Algo de errado!</strong> Não conseguimos validar os dados enviados! 
+		</div>
+		
+		<!-- CAMPO DE PESQUISA E FILTRO -->
+	       <div class="well">
+		        	<div class="row">
+	
+				        <div class="col-md-4 col-lg-4">
+				        	<label for="opt">Buscar por:</label>
+							<select id="opt" ng-model="pesq">
+			   					<option value="iid">IID</option>
+			   					<option value="dna1">DNA ONDA 1</option>
+			   					<option value="dna2">DNA ONDA 2</option>
+			   					<option value="dna3">DNA ONDA 3</option>
+								<option value="nome">NOME DO PACIENTE</option>
+								<option value="genotipado">GENOTIPADO</option>
+								<option value="nGenotipado">NÃO GENOTIPADO</option>
+								<option value="emPlaca">EM PLACA</option>
+			   					<option value="tudo">TUDO</option>
+			   				</select>
+						</div>
+					
+					  	<div class="col-md-4 col-lg-4">
+						  	<form ng-submit="buscarPacienteEspecifico(formPaciente.pesqText)" class="form-inline">
+						  		<div class="form-group">
+							  		<label for="pesqText">Pesquisa:</label>
+								    <input type="text" 
+								    	   class="form-control" 
+								    	   placeholder="Pesquisar" 
+								    	   id="pesqText" 
+					                  	   ng-model="formPaciente.pesqText"
+					                  	   autofocus/>
+				                </div>
+				                <button class="btn btn-default" 
+						      		  type="submit">
+						      	 	  <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+						      </button>
+				             </form>
+					   </div>
+					</div>
+				</div> 
+			<br>
+		</div>
+		
+		<!-- PANEL DE DOWNLOAD -->
+		<div class="form-group col-md-2">
+			<p id="downPanel">
+				<a ng-href="../TEMP_FILES/download/{{arquivo}}" 
+				   data-toggle="tooltip" 
+				   data-placement="left" 
+				   title="baixar esta tabela com {{filtrados.length}} registros" 
+				   download>
+			 		    <span id="iconDown" class="glyphicon glyphicon-download-alt"></span>
+				</a>
+			</p>
+		</div>
+		
+		
+		
+		<!-- Paginator -->
+		<div id="paginator" class="container" align="center">
+			<ul class="pagination">
+					  <li><a href="#" ng-click="mudaNumPaginacao('menos')" >Anterior</a></li>
+					  <li>
+					  		<a href="" 
+					  		   ng-click="recarregaTabela(indices[0])" 
+					  		   ng-show="paginationNum > 0 && indices.length > 1">
+					  			{{indices[0]}}
+					  			<span class="glyphicon glyphicon-backward"></span>
+					  		</a>
+					  </li>
+					  <li ng-repeat="n in indices | limitTo: 8 + paginationNum" 
+					  	  ng-show="$index >= paginationNum ">
+					  		<a href="" ng-click="recarregaTabela(n)">{{n}}</a>
+					  </li>
+					  <li>
+					  		<a href="" 
+					  		   ng-click="recarregaTabela(indices.length)" 
+					  		   ng-show="indices.length > 5">
+					  		   	<span class="glyphicon glyphicon-forward"></span>
+					  			{{indices.length}}
+					  		</a>
+					  </li>
+					  <li><a href="#" ng-click="mudaNumPaginacao('mais')" >Próximo</a></li>
+			</ul> 
+		</div>
+		
+		<div class="container" align="center">
+			<p ng-show="filtrados.length > 0">Página {{paginationNum}} - {{filtrados.length}} registros</p>
+		</div>
+		
+	    <div class="container">
+	        <!-- CRIA FORMATO DA TABELA -->
+	        <div id="lista-Pacientes">
+	            <table class="table table-striped table-bordered" >
+	                <tr>
+						<th>
+							<a href="#" ng-click="sortType = 'iid'; sortReverse = !sortReverse">
+								IID
+								<span ng-show="sortType == 'iid'" 
+										class="glyphicon glyphicon-menu-down"></span>
+							</a>
+						</th>
+	                    <th>
+		                    <a href="#" ng-click="sortType = 'genotipado'; sortReverse = !sortReverse">
+		                    	GENOTIPADO
+		                    	<span ng-show="sortType == 'genotipado'" 
+		                    	 	  class="glyphicon glyphicon-menu-down"></span>
+		    				</a>
+	                    </th>
+	                    <th>
+								<a href="#" ng-click="sortType = 'emPlaca'; sortReverse = !sortReverse">
+									EM PLACA
+									<span ng-show="sortType == 'emPlaca'" 
+										   class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th>
+	                    <th>
+	                    	<a href="#" ng-click="sortType = 'dnas[0]._id'; sortReverse = !sortReverse">
+		                    	DNA ONDA 1
+		                    	<span ng-show="sortType == 'dnas[0]._id'" 
+		                    		  class="glyphicon glyphicon-menu-down"></span>
+		    				</a>
+						</th>
+						<th>
+							<a href="#" ng-click="sortType = 'dnas[0].reprovado'; sortReverse = !sortReverse">
+								REP1
+								<span ng-show="sortType == 'dnas[0].reprovado'" 
+										class="glyphicon glyphicon-menu-down"></span>
+							</a>
+						</th>
+	                    <th>
+	                    	<a href="#" ng-click="sortType = 'dnas[1]._id'; sortReverse = !sortReverse">
+		                    	DNA ONDA 2
+		                    	<span ng-show="sortType == 'dnas[1]._id'" 
+		                    		  class="glyphicon glyphicon-menu-down"></span>
+		    				</a>
+						</th>
+						<th>
+							<a href="#" ng-click="sortType = 'dnas[1].reprovado'; sortReverse = !sortReverse">
+								REP2
+								<span ng-show="sortType == 'dnas[1].reprovado'" 
+										class="glyphicon glyphicon-menu-down"></span>
+							</a>
+						</th>
+						<th>
+	                    	<a href="#" ng-click="sortType = 'dnas[2]._id'; sortReverse = !sortReverse">
+		                    	DNA ONDA 3
+		                    	<span ng-show="sortType == 'dnas[2]._id'" 
+		                    	      class="glyphicon glyphicon-menu-down"></span>
+		    				</a>
+						</th>
+						<th>
+								<a href="#" ng-click="sortType = 'dnas[2].reprovado'; sortReverse = !sortReverse">
+									REP3
+									<span ng-show="sortType == 'dnas[2].reprovado'" 
+											class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th>
+	                   	<!-- <th>COLETA</th> -->
+	                    <th></th>
+	                      
+	                </tr>
+	        		
+	                <!-- LOOP PARA CARREGAR TODOS OS PACIENTES EM $scope.Pacientes E COLOCAR NA TABELA -->
+	                <!-- mostra no máximo 50 itens por pagina -->
+	                	 
+	                <tr ng-repeat="paciente in filtrados | orderBy:sortType:sortReverse | limitTo: posicao+50 " 
+	                    ng-show="$index >= posicao">
+	                    
+	                	
+						<td>{{ paciente.iid }}</td>
+						<td>{{ paciente.genotipado }}</td>
+						<td>{{ paciente.emPlaca }}</td>
+						<td>{{ paciente.dnas[0]._id }}</td>
+						<td>{{ paciente.dnas[0].reprovado }}</td>
+						<td>{{ paciente.dnas[1]._id }}</td>
+						<td>{{ paciente.dnas[1].reprovado }}</td>
+						<td>{{ paciente.dnas[2]._id }}</td>
+						<td>{{ paciente.dnas[2].reprovado }}</td>
+	                   <!--  <td>{{ paciente.coleta | date : "dd MMM y"}}</td> -->
+	                    <td>
+	                     	<button type="button" 
+	                     			class="btn btn-info" 
+	                     			ng-click="setPacienteSelecionado(paciente)" 
+	                     			data-toggle="modal" 
+	                     			data-target="#modalVisualizar">
+	   						 	<span class="glyphicon glyphicon-search"></span>
+	  						</button>
+	                    </td>
+	                    <td ng-show="grupo >= 2">
+	                        <button type="button" 
+	                        		class="btn btn-primary" 
+	                        		data-toggle="modal" 
+	                        		data-target="#editModal"
+	                        		ng-click="editarPaciente(paciente)">
+	                        			<span class="glyphicon glyphicon-edit"></span>
+	                   		</button>
+	                        <button type="button" 
+	                        		class="btn btn-danger" 
+	                        		ng-click="deletarPaciente(paciente._id)">
+										<span class="glyphicon glyphicon-remove"></span>					
+							</button>
+	                    </td>
+	                </tr>
+	            </table>
+	            <div align="center">
+	           			<div id="load" class="loader" align="center"></div>
+	           	</div>
+	            <br>
+		        <!-- Modal Visualizar -->
+				<div id="modalVisualizar" class="modal fade" role="dialog">
+		  			<div class="modal-dialog modal-lg">
+		
+		    			<!-- Modal content-->
+		    			<div class="modal-content">
+		    				<div class="modal-header">
+		        				<button type="button" class="close" data-dismiss="modal">&times;</button>
+		       				    <h4 class="modal-title">Informações do Participante</h4>
+							</div>
+							  
+		      				<div class="modal-body">
+								<div class="form-group col-md-12">
+									<div class="form-group col-md-6">
+										<table class="table">
+											<tbody>
+												<tr>
+													<td>IID</td>
+													<td>{{ paciente.iid }}</td>
+												</tr>
+												<tr>
+													<td>GENOTIPADO</td>
+													<td>{{ paciente.genotipado }}</td>
+												</tr>
+												<tr>
+													<td>EM PLACA</td>
+													<td>{{ paciente.emPlaca }}</td>
+												</tr>
+												<tr>
+													<td>NOME</td>
+													<td>{{ paciente.nome }}</td>
+												</tr>
+												<tr>
+													<td>DATA DA COLETA</td>
+													<td>{{ paciente.coleta | date : "dd/MM/y" }}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<hr>
+		        				<div class="row">
+					                <div class="form-group col-md-3 ">
+					                	<div class="panel panel-default">
+				      						<div class="panel-heading">DNA ONDA 1</div>
+				      							<div class="panel-body">
+													<p>NÚMERO: {{ paciente.dnas[0]._id }}</p>
+													<hr>
+													<p>DATA DA COLETA: {{ paciente.dnas[0].coleta | date: 'dd/MM/yyyy' }}</p>
+													<hr>
+													<p>REPROVADO: {{ paciente.dnas[0].reprovado }}</p>
+													<hr>
+													<p>SORO 1 : {{ paciente.dnas[0].soro.s1 }} </p>
+													<p>SORO 2 : {{ paciente.dnas[0].soro.s2 }}</p>
+													<p>SORO 3 : {{ paciente.dnas[0].soro.s3 }}</p>
+													<p>SORO 4 : {{ paciente.dnas[0].soro.s4 }}</p>
+													<hr>
+													<p>PLASMA 1 : {{ paciente.dnas[0].plasma.p1 }}</p>
+													<p>PLASMA 2 : {{ paciente.dnas[0].plasma.p2 }}</p>
+													<p>PLASMA 3 : {{ paciente.dnas[0].plasma.p3 }}</p>
+													<p>PLASMA 4 : {{ paciente.dnas[0].plasma.p4 }}</p>
+													<hr>
+													<p>RnaLatter 1 : {{ paciente.dnas[0].rnaLatter1 }}</p>
+													<p>RnaLatter 2 : {{ paciente.dnas[0].rnaLatter2 }}</p>
+												</div>
+					                    </div>
+					                </div>
+					                <div class="form-group col-md-3 ">
+					                	<div class="panel panel-default">
+				      						<div class="panel-heading">DNA ONDA 2</div>
+				      							<div class="panel-body">
+					                    			<p>NÚMERO: {{ paciente.dnas[1]._id }}</p>
+					                    			<hr>
+					                    			<p>DATA DA COLETA: {{ paciente.dnas[1].coleta | date:'dd/MM/yyyy' }}</p>
+					                    			<hr>
+													<p>REPROVADO: {{ paciente.dnas[1].reprovado  }}</p>
+													<hr>
+													<p>SORO 1 : {{ paciente.dnas[1].soro.s1 }} </p>
+													<p>SORO 2 : {{ paciente.dnas[1].soro.s2 }}</p>
+													<p>SORO 3 : {{ paciente.dnas[1].soro.s3 }}</p>
+													<p>SORO 4 : {{ paciente.dnas[1].soro.s4 }}</p>
+													<hr>
+													<p>PLASMA 1 : {{ paciente.dnas[1].plasma.p1 }}</p>
+													<p>PLASMA 2 : {{ paciente.dnas[1].plasma.p2 }}</p>
+													<p>PLASMA 3 : {{ paciente.dnas[1].plasma.p3 }}</p>
+													<p>PLASMA 4 : {{ paciente.dnas[1].plasma.p4 }}</p>
+													<hr>
+													<p>RnaLatter 1 : {{ paciente.dnas[1].rnaLatter1 }}</p>
+													<p>RnaLatter 2 : {{ paciente.dnas[1].rnaLatter2 }}</p>
+					                    		</div>
+					                    </div>
+					                </div>
+					                <div class="form-group col-md-3 ">
+					                	<div class="panel panel-default">
+				      						<div class="panel-heading">DNA ONDA 3</div>
+				      							<div class="panel-body">
+					                    			<p>NÚMERO: {{ paciente.dnas[2]._id }}</p>
+					                    			<hr>
+					                    			<p>DATA DA COLETA: {{ paciente.dnas[2].coleta | date: 'dd/MM/yyyy' }}</p>
+					                    			<hr>
+													<p>REPROVADO: {{ paciente.dnas[2].reprovado }}</p>
+													<hr>
+													<p>SORO 1 : {{ paciente.dnas[2].soro.s1 }} </p>
+													<p>SORO 2 : {{ paciente.dnas[2].soro.s2 }}</p>
+													<p>SORO 3 : {{ paciente.dnas[2].soro.s3 }}</p>
+													<p>SORO 4 : {{ paciente.dnas[2].soro.s4 }}</p>
+													<hr>
+													<p>PLASMA 1 : {{ paciente.dnas[2].plasma.p1 }}</p>
+													<p>PLASMA 2 : {{ paciente.dnas[2].plasma.p2 }}</p>
+													<p>PLASMA 3 : {{ paciente.dnas[2].plasma.p3 }}</p>
+													<p>PLASMA 4 : {{ paciente.dnas[2].plasma.p4 }}</p>
+													<hr>
+													<p>Microbióta 1 : {{ paciente.dnas[2].mic1 }}</p>
+													<p>Microbióta 2 : {{ paciente.dnas[2].mic2 }}</p>
+					                    		</div>
+					                    </div>
+					                </div> 
+				                </div>
+				       			<hr>
+				                <div class="form-group">
+									  <p>OBSERVAÇÃO : {{ paciente.obs }}</p>
+								</div>
+		      				</div>
+					       <div class="modal-footer">
+					         <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+					       </div>
+		    			</div>
+		  			</div>
+				</div>
+				<!-- MODAL END -->
+				
+				
+				<!-- Modal EDITAR -->
+				<div id="editModal" class="modal fade" role="dialog">
+				  <div class="modal-dialog modal-lg">
+				
+				    <!-- Modal content-->
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal">&times;</button>
+				        <h4 class="modal-title">Editar</h4>
+				      </div>
+				      <div class="modal-body">
+						<!-- FORMULÁRIO PARA EDITARMOS UM PACIENTE -->
+						<div id="Paciente-form">
+							<form name="userForm" ng-submit="submitForm(userForm.$valid)" novalidate>
+								<br>
+								<div class="row">
+									<div class="form-group col-md-2" 
+											ng-class="{ 'has-error' : userForm.iidPaciente.$invalid && 
+																	!userForm.iidPaciente.$pristine }">
+										<label for="iidPaciente">IID</label>
+										<input type="text" 
+											class="form-control" 
+											id="iidPaciente" 
+											placeholder="IID"
+											value=""
+											required="true" 
+											pattern="[0-9]+$"
+											ng-model="formPaciente.iid">
+											<p ng-show="userForm.iidPaciente.$invalid && 
+														!userForm.iidPaciente.$pristine" 
+												class="help-block">IID Obrigatório!</p>
+									</div>
+									<div class="form-group col-md-6"
+									ng-class="{ 'has-error' : userForm.nome.$invalid &&
+													   !userForm.nome.$pristine}">
+										<label for="nome">NOME DO PACIENTE</label>
+											<input type="text" 
+												class="form-control" 
+												id="nome" 
+												placeholder="Nome Sobrenome"
+												value="" 
+												required="true" 
+												pattern="[a-z\s]+$"
+												ng-model="formPaciente.nome">
+												<p ng-show="userForm.nome.$invalid && 
+															!userForm.nome.$pristine" 
+													class="help-block">Nome Obrigatório!</p>
+									</div>
+									<div class="form-group col-md-3">
+										<label for="coleta">DATA DA COLETA</label>
+										<input type="date" 
+											class="form-control" 
+											id="coleta"
+											value=""  
+											ng-model="formPaciente.coleta">
+									</div>
+									<div class="form-group col-md-2">
+											<label for="genotipado">GENOTIPADO</label>
+											<br>
+											<form >
+												<label class="radio-inline">
+												  <input type="radio" 
+														   name="optradio"
+														   ng-model="formPaciente.genotipado"
+														   value="1"
+														   checked>Sim
+												</label>
+												<label class="radio-inline">
+												  <input type="radio" 
+														   name="optradio"
+														   ng-model="formPaciente.genotipado"
+														   value="0">Não
+												</label>
+											</form>
+									</div>
+									<div class="form-group col-md-2">
+											<label for="genotipado">EM PLACA</label>
+											<br>
+											<form >
+													<label class="radio-inline">
+													  <input type="radio" 
+															   name="optradio"
+															   ng-model="formPaciente.emPlaca"
+															   value="1"
+															   checked>Sim
+													</label>
+													<label class="radio-inline">
+													  <input type="radio" 
+															   name="optradio"
+															   ng-model="formPaciente.emPlaca"
+															   value="0">Não
+													</label>
+											</form>
+									</div>
+								</div>
+								<div class="row">
+									<div class="form-group col-md-3 col-md-offset-1">
+										<div class="panel panel-default">
+											<div class="panel-heading">DNA ONDA 1</div>
+												<div class="panel-body">
+												
+													<label for="num1">Número</label>
+													<input type="text" 
+													class="form-control" 
+													id="num1" 
+													ng-model="formPaciente.dnas[0]._id"
+													value="">
+													
+													<label for="coleta1">Data da coleta</label>
+													<input type="date"
+													class="form-control" 
+													id="coleta1" 
+													ng-model="formPaciente.dnas[0].coleta"
+													value="">
+													
+													<label>Reprovado</label>
+													<br>
+													<form >
+														<label class="radio-inline" >
+															<input type="radio" 
+																	name="optradio"
+																	ng-model="formPaciente.dnas[0].reprovado"
+																	value="1"
+																	checked>Sim
+														</label>
+														<label class="radio-inline">
+															<input type="radio" 
+																	name="optradio"
+																	ng-model="formPaciente.dnas[0].reprovado"
+																	value="0">Não
+														</label>
+													</form>
+													<hr>
+													<label for="s1">SORO 1</label>
+													<input type="text" 
+														class="form-control" 
+														id="s1"  
+														value=""
+														ng-model="formPaciente.dnas[0].soro.s1">
+													<label for="s2">SORO 2</label>
+													<input type="text" 
+														class="form-control" 
+														id="s2" 
+														value=""
+														ng-model="formPaciente.dnas[0].soro.s2">
+													<label for="s3">SORO 3</label>
+													<input type="text" 
+														class="form-control" 
+														id="s3"  
+														value=""
+														ng-model="formPaciente.dnas[0].soro.s3">
+													<label for="s4">SORO 4</label>
+													<input type="text" 
+														class="form-control" 
+														id="s4" 
+														value=""
+														ng-model="formPaciente.dnas[0].soro.s4">
+													<hr>
+													<label for="p1">PLASMA 1</label>
+													<input type="text" 
+														class="form-control" 
+														id="p1"  
+														value=""
+														ng-model="formPaciente.dnas[0].plasma.p1">
+													<label for="p2">PLASMA 2</label>
+													<input type="text" 
+														class="form-control" 
+														id="p2"  
+														value=""
+														ng-model="formPaciente.dnas[0].plasma.p2">
+													<label for="p3">PLASMA 3</label>
+													<input type="text" 
+														class="form-control" 
+														id="p3"  
+														value=""
+														ng-model="formPaciente.dnas[0].plasma.p3">
+													<label for="p4">PLASMA 4</label>
+													<input type="text" 
+														class="form-control" 
+														id="p4"  
+														value=""
+														ng-model="formPaciente.dnas[0].plasma.p4">
+													<hr>
+													<label for="r1">RnaLatter 1</label>
+													<input type="text" 
+														class="form-control" 
+														id="r1"  
+														value=""
+														ng-model="formPaciente.dnas[0].rnaLatter1">
+													<label for="r2">RnaLatter 2</label>
+													<input type="text" 
+														class="form-control" 
+														id="r2"  
+														value=""
+														ng-model="formPaciente.dnas[0].rnaLatter2">
+												</div>
+										</div>
+									</div>
+									<div class="form-group col-md-3 col-md-offset-1">
+										<div class="panel panel-default">
+											<div class="panel-heading">DNA ONDA 2</div>
+											<div class="panel-body">
+											
+												<label for="num2">Número</label>
+												<input type="text" 
+												class="form-control" 
+												id="num2" 
+												value=""
+												ng-model="formPaciente.dnas[1]._id">
+												
+												<label for="coleta2">Data da coleta</label>
+												<input type="date" 
+														class="form-control" 
+														id="coleta2" 
+														value=""
+														ng-model="formPaciente.dnas[1].coleta">
+												
+												<label>Reprovado</label>
+												<br>
+												<form >
+													<label class="radio-inline">
+														<input type="radio" 
+																name="optradio"
+																ng-model="formPaciente.dnas[1].reprovado"
+																value="1"
+																checked>Sim
+													</label>
+													<label class="radio-inline">
+														<input type="radio" 
+																name="optradio"
+																ng-model="formPaciente.dnas[1].reprovado"
+																value="0">Não
+													</label>
+												</form>
+												<hr>
+												<label for="s1">SORO 1</label>
+												<input type="text" 
+													class="form-control" 
+													id="s1"  
+													value=""
+													ng-model="formPaciente.dnas[1].soro.s1">
+												<label for="s2">SORO 2</label>
+												<input type="text" 
+													class="form-control" 
+													id="s2" 
+													value=""
+													ng-model="formPaciente.dnas[1].soro.s2">
+												<label for="s3">SORO 3</label>
+												<input type="text" 
+													class="form-control" 
+													id="s3"  
+													value=""
+													ng-model="formPaciente.dnas[1].soro.s3">
+												<label for="s4">SORO 4</label>
+												<input type="text" 
+													class="form-control" 
+													id="s4" 
+													value=""
+													ng-model="formPaciente.dnas[1].soro.s4">
+												<hr>
+												<label for="p1">PLASMA 1</label>
+												<input type="text" 
+													class="form-control" 
+													id="p1"  
+													value=""
+													ng-model="formPaciente.dnas[1].plasma.p1">
+												<label for="p2">PLASMA 2</label>
+												<input type="text" 
+													class="form-control" 
+													id="p2"  
+													value=""
+													ng-model="formPaciente.dnas[1].plasma.p2">
+												<label for="p3">PLASMA 3</label>
+												<input type="text" 
+													class="form-control" 
+													id="p3"  
+													value=""
+													ng-model="formPaciente.dnas[1].plasma.p3">
+												<label for="p4">PLASMA 4</label>
+												<input type="text" 
+													class="form-control" 
+													id="p4"  
+													value=""
+													ng-model="formPaciente.dnas[1].plasma.p4">
+												<label for="r1">RnaLatter 1</label>
+												<input type="text" 
+													class="form-control" 
+													id="r1"  
+													value=""
+													ng-model="formPaciente.dnas[1].rnaLatter1">
+												<label for="r2">RnaLatter 2</label>
+												<input type="text" 
+													class="form-control" 
+													id="r2"  
+													value=""
+													ng-model="formPaciente.dnas[1].rnaLatter2">
+											</div>
+										</div>
+									</div>
+									<div class="form-group col-md-3 col-md-offset-1">
+										<div class="panel panel-default">
+											<div class="panel-heading">DNA ONDA 3</div>
+												<div class="panel-body">
+												
+													<label for="num3">Número</label>
+													<input type="text" 
+													class="form-control" 
+													id="num3" 
+													value=""
+													ng-model="formPaciente.dnas[2]._id">
+													
+													<label for="coleta3">Data da coleta</label>
+													<input type="date" 
+													class="form-control" 
+													id="coleta3" 
+													value=""
+													ng-model="formPaciente.dnas[2].coleta">
+													
+													<label>Reprovado</label>
+													<br>
+													<form >
+														<label class="radio-inline">
+															<input type="radio" 
+																	name="optradio"
+																	ng-model="formPaciente.dnas[2].reprovado"
+																	value="1"
+																	checked>Sim
+														</label>
+														<label class="radio-inline">
+															<input type="radio" 
+																	name="optradio"
+																	ng-model="formPaciente.dnas[2].reprovado"
+																	value="0">Não
+														</label>
+													</form>
+													<hr>
+													<label for="s1">SORO 1</label>
+													<input type="text" 
+														class="form-control" 
+														id="s1"  
+														value=""
+														ng-model="formPaciente.dnas[2].soro.s1">
+													<label for="s2">SORO 2</label>
+													<input type="text" 
+														class="form-control" 
+														id="s2" 
+														value=""
+														ng-model="formPaciente.dnas[2].soro.s2">
+													<label for="s3">SORO 3</label>
+													<input type="text" 
+														class="form-control" 
+														id="s3"  
+														value=""
+														ng-model="formPaciente.dnas[2].soro.s3">
+													<label for="s4">SORO 4</label>
+													<input type="text" 
+														class="form-control" 
+														id="s4" 
+														value=""
+														ng-model="formPaciente.dnas[2].soro.s4">
+													<hr>
+													<label for="p1">PLASMA 1</label>
+													<input type="text" 
+														class="form-control" 
+														id="p1"  
+														value=""
+														ng-model="formPaciente.dnas[2].plasma.p1">
+													<label for="p2">PLASMA 2</label>
+													<input type="text" 
+														class="form-control" 
+														id="p2"  
+														value=""
+														ng-model="formPaciente.dnas[2].plasma.p2">
+													<label for="p3">PLASMA 3</label>
+													<input type="text" 
+														class="form-control" 
+														id="p3"  
+														value=""
+														ng-model="formPaciente.dnas[2].plasma.p3">
+													<label for="p4">PLASMA 4</label>
+													<input type="text" 
+														class="form-control" 
+														id="p4"  
+														value=""
+														ng-model="formPaciente.dnas[2].plasma.p4">
+													<hr>
+													<label for="mic1">Microbióta 1</label>
+													<input type="text" 
+														class="form-control" 
+														id="mic1"  
+														value=""
+														ng-model="formPaciente.dnas[2].mic1">
+													<label for="mic2">Microbióta 2</label>
+													<input type="text" 
+														class="form-control" 
+														id="mic2"
+														value=""
+														ng-model="formPaciente.dnas[2].mic2">
+											</div>
+										</div>
+									</div>              
+							
+									<div class="form-group col-md-6 col-md-offset-1">
+											<label for="observ">Observação:</label>
+											<textarea class="form-control" 
+													rows="5" 
+													id="observ"
+													value=""
+													ng-model="formPaciente.obs"></textarea>
+									</div>
+									<div class="form-group col-md-3 col-md-offset-5">
+										<button type="submit" class="btn btn-info" ng-click="atualizarPaciente()" data-dismiss="modal">Atualizar</button>
+									</div>
+								</div>
+							</div>
+				       </div>
+				      <div class="modal-footer">
+				        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				      </div>
+				    </div>
+				  </div>
+				</div>
+	        </div>
+	    </div>
+	</body>
+</html>

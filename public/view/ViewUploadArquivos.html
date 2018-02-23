@@ -1,0 +1,381 @@
+<!doctype html>
+ 
+<html ng-app="bioteca">
+	<head>
+	    <!-- META -->
+	    <meta charset="utf-8">
+	    <!-- Otimizar a exibição em dispositivos móveis -->
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	    <title>Bioteca</title>
+	 
+	    
+	    <!-- Carregando o bootstrap-->
+	    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	   
+	    <!-- CSS -->
+	    <link href="../view/css/style.css" rel="stylesheet">
+	    
+	    <!-- JS -->
+	    <!-- Carregando a biblioteca jQuery -->
+	    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	    <!-- Carregando a biblioteca AngularJS -->
+	    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+	    
+	    <!-- Carregando a biblioteca bootstrap -->
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	    
+	    <script src="../control/ArquivosControl.js"></script>
+	    <script src="../control/UsuarioControl.js"></script>
+	    
+	</head>
+	<body ng-controller="arquivosControl" ng-required="verificaLogin()">
+		
+		<nav class="navbar navbar-inverse">
+	  		<div class="container-fluid">
+	    	<div class="navbar-header">
+	    		<a class="navbar-brand" href="#">Bioteca</a>
+	    	</div>
+	    		<ul class="nav navbar-nav">
+	      			<li><a href="./index.html">Home</a></li>
+	      			<li>
+	      			<a href="../view/ViewCadastroPaciente.html" ng-show="grupo >= 2">Novo Registro</a>
+	      			</li>
+	      			<li class="active"><a href="../view/ViewUploadArquivos.html" ng-show="grupo >= 2">Upload</a></li>
+	    		</ul>
+	    		<ul class="nav navbar-nav navbar-right">
+	      			<li><a id="cadastro" href="../view/ViewCadastroUsuario.html"><span class="glyphicon glyphicon-user"></span> Cadastre-se</a></li>
+		      		<li><a id="login" href="../view/ViewLogin.html"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+		      		<!-- DROPDOWN DO USUARIO -->
+	    			<li>
+	    				<li id="usuarioNome" class="dropdown">
+						    <a  class="dropdown-toggle" data-toggle="dropdown" href="#">{{usuarioNome}}
+						    <span class="caret"></span></a>
+						    <ul class="dropdown-menu">
+						      <li>
+						      	 <a href="../view/ViewGerenciamentoUsuario.html">
+						      		<span class="glyphicon glyphicon-cog"></span>
+						      		Minha Conta
+						      	 </a>
+						      </li>
+						      <li>
+						      	<a href="#" ng-click="logout()">
+		    							<span class="glyphicon glyphicon-log-out"></span>
+		    							Sair
+	    						</a>
+	    					 </li>
+						    </ul>
+						  </li>
+	    			</li>
+	    		</ul>
+	  		</div>
+		</nav> 
+		
+		<!-- PANEL DE DOWNLOAD -->
+		<div class="form-group col-md-2">
+			<p id="downPanelModel">
+				<a ng-href="../TEMP_FILES/BiotecaModelo.csv"
+				   data-toggle="tooltip" 
+				   data-placement="left" 
+				   title="Download do Arquivo Modelo" 
+				   download>
+			 		    <span id="iconDown" class="glyphicon glyphicon-download-alt"></span>
+				</a>
+			</p>
+			<div id="downPanelBox">
+				<br>
+				<p>MODELO CSV</p>
+			</div>
+		</div>
+			
+		<div class="container">
+		    <div align="center">
+		    	
+		    	<!-- ALERTS -->
+		    	<div class="alert alert-success alert-dismissable" id="successInf">
+		    	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+				  <strong>Dados Enviados!</strong> Seus dados já estão gravados em nosso banco de dados! 
+				</div>
+
+				<div class="alert alert-info alert-dismissable" id="infoInf">
+					<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+			  		<strong>Upload Completo!</strong> Verifique os dados clicando em vizualizar! 
+				  </div>
+				  
+			  	<div class="alert alert-danger alert-dismissable" id="dangerInf">
+			  	  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+				  <strong>Algo de errado!</strong> Não conseguimos validar os dados enviados! 
+				</div>
+		    
+		    	<div class="well">
+		   			<div class="form-group">
+					   <label class="btn btn-default btn-file">
+				   			 Procurar 
+				   			 <input type="file" 
+				   			 		id="arquivoInput"
+				   			 		ng-model="arquivo" 
+				   			 		accept=".csv" 
+				   			 		hidden>
+					   </label>
+			   	       <button type="submit"
+			   	       		   id="upload" 
+				       		   class="btn btn-info" 
+				       		   ng-click="enviar()">
+					 		<span class="glyphicon glyphicon-upload"></span>
+					   </button>
+					   <p> Arquivo: {{arquivo}} </p>
+					   <p> Quantidade de registros: {{numRegistros}} </p>
+					</div>
+				</div>
+
+				<form ng-show="grupo >= 2">
+					<button class="btn btn-default" 
+							ng-click="visualizar()"
+							ng-disabled= "wasSent">
+				       			Visualizar
+					</button>
+					<button class="btn btn-default" 
+							ng-click="upload()"
+							ng-disabled= "inMemory">
+								Enviar
+					</button>
+				</form>
+				<div class="checkbox">
+						<label><input type="checkbox" value="1" ng-model="placas">Somente atualizar placas</label>
+				</div>
+			</div>
+			<br>
+	    </div>
+	    
+	    
+	    <!-- Paginator -->
+		<div id="paginator" class="container" align="center">
+			<ul class="pagination">
+			  <li>
+			  	<a href="#" 
+			  	   ng-click="mudaNumPaginacao('menos')" 
+			  	   ng-show="pacientes.length > 0">
+			  	   
+			  		Anterior
+		  		</a>
+	  		  </li>
+			  <li>
+		  		<a href="" 
+		  		   ng-click="recarregaTabela(indices[0])" 
+		  		   ng-show="paginationNum > 0">
+		  			<span class="glyphicon glyphicon-backward"></span>
+		  			{{indices[0]}}
+		  		</a>
+			  </li>
+			  <li ng-repeat="n in indices | limitTo: 8 + paginationNum" 
+			  	  ng-show="$index >= paginationNum">
+			  		<a href="" ng-click="recarregaTabela(n)">{{n}}</a>
+			  </li>
+			  <li>
+		  		<a href="" 
+		  		   ng-click="recarregaTabela(indices.length-1)" 
+		  		   ng-show="indices.length > 0">
+		  			{{indices.length-1}}
+		  			<span class="glyphicon glyphicon-forward"></span>
+		  		</a>
+			  </li>
+			  <li>
+			  	<a href="#" 
+			  	   ng-click="mudaNumPaginacao('mais')" 
+			  	   ng-show="pacientes.length > 0">
+			  		Próximo
+		  		</a>
+			  </li>
+			</ul> 
+		</div>
+		
+	    <div class="container">
+		    <!-- LISTA Pacientes -->
+		        <div id="lista-Pacientes">
+		            <table class="table table-striped table-bordered">
+		 
+		                <tr>
+							
+							<th>
+								<a href="#" ng-click="sortType = 'iid'; sortReverse = !sortReverse">
+									IID
+									<span ng-show="sortType == 'iid'" 
+										class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th>
+							<th>
+								<a href="#" ng-click="sortType = 'genotipado'; sortReverse = !sortReverse">
+									GENOTIPADO
+								<span ng-show="sortType == 'genotipado'" 
+									class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th>
+							<th>
+								<a href="#" ng-click="sortType = 'em_placa'; sortReverse = !sortReverse">
+									EM PLACA
+								<span ng-show="sortType == 'em_placa'" 
+									class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th>
+							<th>
+								<a href="#" ng-click="sortType = 'DNA_Onda_1'; sortReverse = !sortReverse">
+									DNA ONDA 1
+									<span ng-show="sortType == 'DNA_Onda_1'" 
+										class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th>
+							<th>
+								<a href="#" ng-click="sortType = 'DNA_Onda_2'; sortReverse = !sortReverse">
+									DNA ONDA 2
+									<span ng-show="sortType == 'DNA_Onda_2'" 
+										class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th><th>
+								<a href="#" ng-click="sortType = 'DNA_Onda_3'; sortReverse = !sortReverse">
+									DNA ONDA 3
+									<span ng-show="sortType == 'DNA_Onda_3'" 
+										class="glyphicon glyphicon-menu-down"></span>
+								</a>
+							</th>
+							<!-- <th>COLETA</th> -->
+							<th></th>
+	                      
+	                	</tr>
+		                
+						<!-- LOOP PARA CARREGAR TODOS OS PACIENTES EM $scope.Pacientes -->
+						
+						<tr ng-repeat="paciente in pacientes | orderBy:sortType:sortReverse | limitTo: posicao+50 " 
+							ng-show="$index >= posicao" >
+							
+							<td>{{ paciente.iid }}</td>
+							<td>{{ paciente.genotipado }}</td>
+							<td>{{ paciente.em_placa }}</td>
+							<td>{{ paciente.DNA_Onda_1 }}</td>
+							<td>{{ paciente.DNA_Onda_2 }}</td>
+							<td>{{ paciente.DNA_Onda_3 }}</td>
+							<td>
+								<button type="button" 
+										class="btn btn-info" 
+										ng-click="setPacienteSelecionado(paciente)" 
+										data-toggle="modal" 
+										data-target="#modalVisualizar">
+									<span class="glyphicon glyphicon-search"></span>
+								</button>
+							</td>
+							<td>
+								<button type="button" 
+										class="btn btn-primary"
+										value="Delete Row" 
+										ng-click="deletaLinha(paciente)">Remover</button>
+							</td>
+						</tr>
+		           	</table>
+	           	</div>
+	           	
+	           	<div align="center">
+	           		<div id="load" class="loader" align="center"></div>
+	           	</div>
+	           	
+	           	<!-- Modal Visualizar -->
+				<div id="modalVisualizar" class="modal fade" role="dialog">
+		 			<div class="modal-dialog modal-lg">
+		 			
+			   			<div class="modal-content">
+			   				<div class="modal-header">
+			       				<button type="button" class="close" data-dismiss="modal">&times;</button>
+		      				    <h4 class="modal-title">Informações do Paciente</h4>
+			     			</div>
+		     				<div class="modal-body">
+								<p>GENOTIPADO: {{ paciente.genotipado }}</p>
+								<p>EM PLACA: {{ paciente.em_placa }}</p>
+			       				<p>IID: {{ paciente.iid }}</p>
+			       				<p>NOME: {{ paciente.nome }}</p>
+			       				<p>COLETA: {{paciente.data_da_coleta}} </p>
+			       				<hr>
+			       				<div class="row">
+					                <div class="form-group col-md-3 ">
+					                	<div class="panel panel-default">
+				      						<div class="panel-heading">DNA ONDA 1</div>
+				      							<div class="panel-body">
+			                   							<p>NÚMERO: {{ paciente.DNA_Onda_1 }}</p>
+			                   							<hr>
+						                    			<p>DATA DA COLETA: {{ paciente.DNA_Onda_1_Coleta | date: 'dd/MM/yyyy' }}</p>
+						                    			<hr>
+														<p>REPROVADO: {{ paciente.DNA_Onda_1_Reprovado }}</p>
+														<hr>
+														<p>SORO 1 : {{ paciente.Soro_1_Onda_1 }} </p>
+									                    <p>SORO 2 : {{ paciente.Soro_2_Onda_1 }}</p>
+									                    <p>SORO 3 : {{ paciente.Soro_3_Onda_1 }}</p>
+														<p>SORO 4 : {{ paciente.Soro_4_Onda_1 }}</p>
+														<hr>
+														<p>PLASMA 1 : {{ paciente.Plasma_1_Onda_1 }}</p>
+									                    <p>PLASMA 2 : {{ paciente.Plasma_2_Onda_1 }}</p>
+									                    <p>PLASMA 3 : {{ paciente.Plasma_3_Onda_1 }}</p>
+														<p>PLASMA 4 : {{ paciente.Plasma_4_Onda_1 }}</p>
+														<hr>
+														<p>RnaLatter 1 : {{ paciente.RnaLatter_1_Onda_1 }}</p>
+									                    <p>RnaLatter 2 : {{ paciente.RnaLatter_2_Onda_1 }}</p>
+					                    		</div>
+					                    </div>
+					                </div>
+					                <div class="form-group col-md-3 ">
+					                	<div class="panel panel-default">
+				      						<div class="panel-heading">DNA ONDA 2</div>
+				      							<div class="panel-body">
+					                    				<p>NÚMERO: {{ paciente.DNA_Onda_2 }}</p>
+			                   							<hr>
+						                    			<p>DATA DA COLETA: {{ paciente.DNA_Onda_2_Coleta | date: 'dd/MM/yyyy' }}</p>
+						                    			<hr>
+														<p>REPROVADO: {{ paciente.DNA_Onda_2_Reprovado }}</p>
+														<hr>
+														<p>SORO 1 : {{ paciente.Soro_1_Onda_2 }} </p>
+									                    <p>SORO 2 : {{ paciente.Soro_2_Onda_2 }}</p>
+									                    <p>SORO 3 : {{ paciente.Soro_3_Onda_2 }}</p>
+														<p>SORO 4 : {{ paciente.Soro_4_Onda_2 }}</p>
+														<hr>
+														<p>PLASMA 1 : {{ paciente.Plasma_1_Onda_2 }}</p>
+									                    <p>PLASMA 2 : {{ paciente.Plasma_2_Onda_2 }}</p>
+									                    <p>PLASMA 3 : {{ paciente.Plasma_3_Onda_2 }}</p>
+														<p>PLASMA 4 : {{ paciente.Plasma_4_Onda_2 }}</p>
+														<hr>
+														<p>RnaLatter 1 : {{ paciente.RnaLatter_1_Onda_2 }}</p>
+									                    <p>RnaLatter 2 : {{ paciente.RnaLatter_2_Onda_2 }}</p>
+					                    		</div>
+					                    </div>
+					                </div>
+					                <div class="form-group col-md-3 ">
+					                	<div class="panel panel-default">
+				      						<div class="panel-heading">DNA ONDA 3</div>
+				      							<div class="panel-body">
+				      									<p>NÚMERO: {{ paciente.DNA_Onda_3 }}</p>
+			                   							<hr>
+						                    			<p>DATA DA COLETA: {{ paciente.DNA_Onda_3_Coleta | date: 'dd/MM/yyyy' }}</p>
+						                    			<hr>
+														<p>REPROVADO: {{ paciente.DNA_Onda_3_Reprovado }}</p>
+														<hr>
+														<p>SORO 1 : {{ paciente.Soro_1_Onda_3 }} </p>
+									                    <p>SORO 2 : {{ paciente.Soro_2_Onda_3 }}</p>
+									                    <p>SORO 3 : {{ paciente.Soro_3_Onda_3 }}</p>
+														<p>SORO 4 : {{ paciente.Soro_4_Onda_3 }}</p>
+														<hr>
+														<p>PLASMA 1 : {{ paciente.Plasma_1_Onda_3 }}</p>
+									                    <p>PLASMA 2 : {{ paciente.Plasma_2_Onda_3 }}</p>
+									                    <p>PLASMA 3 : {{ paciente.Plasma_3_Onda_3 }}</p>
+														<p>PLASMA 4 : {{ paciente.Plasma_4_Onda_3 }}</p>
+														<hr>
+														<p>Microbióta 1 : {{ paciente.Microbiota_1 }}</p>
+														<p>Microbióta 2 : {{ paciente.Microbiota_2 }}</p>
+					                    		</div>
+					                    </div>
+					                </div> 
+				                </div>
+						</div>
+					       <div class="modal-footer">
+					         <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+					       </div>
+			   			</div>
+					</div>
+				</div>
+	     </div>
+	</body>
+</html>

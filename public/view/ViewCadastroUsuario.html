@@ -1,0 +1,131 @@
+<!doctype html>
+ 
+<!-- ESPECIFICANDO NOSSO MÓDULO ANGULAR-->
+<html ng-app="bioteca">
+	<head>
+	    <!-- META -->
+	    <meta charset="utf-8">
+	    <!-- Otimizar a exibição em dispositivos móveis -->
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	    <title>Bioteca</title>
+	 
+	    <!-- Carregando o bootstrap-->
+	    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	    
+	    <!-- CSS -->
+	    <link href="../view/css/style.css" rel="stylesheet">
+	  
+	 	<!--<link href="../view/css/style.css" rel="stylesheet">-->
+	    <!-- JS -->
+	    <!-- Carregando a biblioteca jQuery -->
+	    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	    <!-- Carregando a biblioteca AngularJS -->
+	    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+	    <!-- Carregando a biblioteca bootstrap -->
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	    
+	    <script src="../control/UsuarioControl.js"></script>
+	    
+	</head>
+	<body ng-controller="usuarioController">
+		
+		<nav class="navbar navbar-inverse">
+	  		<div class="container-fluid">
+		    	<div class="navbar-header">
+		    		<a class="navbar-brand" href="#">Bioteca</a>
+		    	</div>
+		    		<ul class="nav navbar-nav">
+		      			<li>
+		      			<a href="../view/ViewCadastroPaciente.html" ng-show="grupo >= 2">Novo Registro</a>
+		      			</li>
+		      			<li><a href="../view/ViewUploadArquivos.html" ng-show="grupo >= 2">Upload</a></li>
+		    		</ul>
+		    		<ul class="nav navbar-nav navbar-right">
+		      			<li class="active"><a id="login" href="#"><span class="glyphicon glyphicon-user"></span>Cadastre-se</a></li>
+		      			<li><a id="login" href="../view/ViewLogin.html"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+		      			<!-- DROPDOWN DO USUARIO 
+		    			<li>
+		    				<li id="usuarioNome" class="dropdown">
+							    <a id="usuarioNome"class="dropdown-toggle" data-toggle="dropdown" href="#">{{usuarioNome}}
+							    <span class="caret"></span></a>
+							    <ul class="dropdown-menu">
+							      <li>
+							      	 <a href="../view/ViewGerenciamentoUsuario.html">
+							      		<span class="glyphicon glyphicon-cog"></span>
+							      		Minha Conta
+							      	 </a>
+							      </li>
+							      <li>
+							      	<a href="#" ng-click="logout()">
+			    							<span class="glyphicon glyphicon-log-out"></span>
+			    							Sair
+		    						</a>
+		    					 </li>
+							    </ul>
+							  </li>
+		    			</li>-->
+		    		</ul>
+	  		</div>
+		</nav>
+		
+		<div>
+		  <div class="col-xs-offset-2 col-xs-8 col-md-offset-4 col-md-4">
+		    <form>
+		        <div class="form-group">
+		          <label for="name">Nome</label>
+		          <input type="text" 
+		          		 id="name" 
+		          		 name="name" 
+		          		 class="form-control" 
+		          		 ng-model="user.name" 
+		          		 placeholder="Digite seu nome completo" 
+		          		 required autofocus>
+		        </div>
+		        <div class="form-group">
+		          <label for="email">Email</label>
+		          <input type="email" 
+		          		 id="email" 
+		          		 name="email" 
+		          		 class="form-control" 
+		          		 ng-model="user.email" 
+		          		 placeholder="Digite seu Email" 
+		          		 lowercase required>
+		        </div>
+		        <div class="form-group">
+		          <label for="password">Senha</label>
+		            <input type="password" 
+		            	   id="password" 
+		            	   name="password" 
+		            	   class="form-control" 
+		            	   ng-model="user.password" 
+		            	   placeholder="Digite sua senha" 
+		            	   uib-popover="{{user.getPopoverMsg()}}" 
+		            	   popover-trigger="outsideClick" 
+		            	   password-validator required>
+		        </div>
+		        <div class="form-group">
+		          <label for="confirmPassword">Confirme a sua Senha</label>
+		            <input type="password" 
+		            	   id="confirmPassword" 
+		            	   name="confirmPassword" 
+		            	   class="form-control" 
+		            	   ng-model="user.confirmPassword" 
+		            	   placeholder="Digite sua senha novamente" 
+		            	   uib-popover="{{user.getPopoverMsg()}}" 
+		            	   popover-trigger="outsideClick" 
+		            	   password-validator required>
+		        </div>
+		        <div class="text-center form-group">
+		          <button type="submit" 
+		          		  class="btn btn-primary"
+		          		  ng-click="cadastrar()">Cadastrar</button>
+		          &nbsp; ou&nbsp;
+		          <a href="../view/ViewLogin.html" 
+		          	 class="show-signup">Fazer Login</a>
+		        </div>
+		    </form>
+		  </div>
+		</div>
+	</body>
+</html>

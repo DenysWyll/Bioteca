@@ -1,0 +1,82 @@
+<!doctype html>
+ 
+<html ng-app="bioteca">
+	<head>
+	    <!-- META -->
+	    <meta charset="utf-8">
+	    <!-- Otimizar a exibição em dispositivos móveis -->
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	    <title>Bioteca</title>
+	    
+	    <!-- Carregando o bootstrap-->
+	    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	   
+	   	<!-- CSS -->
+	    <link href="../view/css/style.css" rel="stylesheet">
+	    
+	    <!-- JS -->
+	    <!-- Carregando a biblioteca jQuery -->
+	    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	    
+	    <!-- Carregando a biblioteca AngularJS -->
+	    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+	    
+	    <!-- Carregando a biblioteca bootstrap -->
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	    
+	    <script src="../control/UsuarioControl.js"></script>
+	    
+	</head>
+	<body ng-controller="usuarioController" ng-required="capturaParametros()">
+
+	    <div class="col-xs-offset-2 col-xs-8 col-md-offset-4 col-md-4">
+			<h2>Olá {{usuario.username}} </h2>
+		</div>
+		<div>
+		  <div class="col-xs-offset-2 col-xs-8 col-md-offset-4 col-md-4">
+		  
+		    <form name="userForm">
+		        <div class="form-group">
+		          <label for="password">Senha</label>
+		            <input type="password" 
+		            	   id="password" 
+		            	   name="password" 
+		            	   class="form-control" 
+		            	   ng-model="user.pass" 
+		            	   placeholder="Digite sua senha" 
+		            	   uib-popover="{{user.getPopoverMsg()}}" 
+		            	   popover-trigger="outsideClick" 
+		            	   password-validator required>
+		        </div>
+		       
+	        	<div class="form-group">
+	        		<label for="confirmPassword">Confirme a sua Senha</label>
+	        		
+	        			<input type="password" 
+		            	   id="confirmPassword" 
+		            	   name="confirmPassword" 
+		            	   class="form-control" 
+		            	   ng-model="user.confirmPassword" 
+		            	   placeholder="Digite sua senha novamente" 
+		            	   uib-popover="{{user.getPopoverMsg()}}" 
+		            	   popover-trigger="outsideClick" 
+		            	   password-validator required>
+		            	   
+		        </div>
+			    <p ng-show="user.pass == user.confirmPassword && user.pass != undefined"><i class="glyphicon glyphicon-ok">
+			    </i> Senhas conferem!</p>
+				<p ng-show="user.pass != user.confirmPassword"><i class="glyphicon glyphicon-remove">
+				</i> Senhas não conferem!<p>
+        	      		   
+		        <div class="text-center form-group col-xs-12">
+		          <button type="submit" 
+		          		  class="btn btn-primary"
+		          		  ng-click="atualizarSenha()"
+		          		  ng-disabled="userForm.$invalid || user.pass != user.confirmPassword">Confirmar</button>
+		        </div>
+		    </form>
+		  </div>
+	 	 </div>
+	</body>
+</html>
